@@ -118,7 +118,7 @@ func main() {
 				found := false
 
 				for i := range tasks {
-					if tasks[i].Zagolovok == title && tasks[i].Status {
+					if tasks[i].Zagolovok == title {
 						tasks = append(tasks[:i], tasks[i+1:]...)
 
 						fmt.Println("Задача удалена:", title)
