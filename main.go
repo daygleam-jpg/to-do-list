@@ -178,8 +178,11 @@ func main() {
 
 			for i, event := range events {
 				fmt.Printf("%d. Ввод: %s\n", i+1, event.InputText)
-				fmt.Println("   Ошибка:", event.ErrorText)
-				fmt.Println("   Время:", event.CreatedTime)
+				if event.ErrorText != "" {
+					fmt.Println("   Ошибка:", event.ErrorText)
+
+				}
+				fmt.Println("   Время:", event.CreatedTime.Format("02.01.2006 15:04:05"))
 				fmt.Println("--------")
 			}
 
@@ -198,6 +201,10 @@ func main() {
 			events = append(events, event)
 
 			return
+
+		} else if cmd == "" {
+			errorText = "Вы не ввели команду"
+			fmt.Println("Вы не ввели команду")
 
 		} else {
 			errorText = "неизвестная команда"
