@@ -35,7 +35,6 @@ func main() {
 
 		cmd := strings.ToLower(fields[0])
 
-		// Здесь будем хранить ошибку для события.
 		errorText := ""
 
 		if cmd == "add" {
@@ -92,12 +91,18 @@ func main() {
 
 				for i := range tasks {
 					if tasks[i].Zagolovok == title {
-						tasks[i].Status = true
-						tasks[i].MadeTime = time.Now()
-
-						fmt.Println("Задача отмечена как выполненная:", title)
-
 						found = true
+
+						// Время устанавливаем только при первом done
+						if !tasks[i].Status {
+							tasks[i].Status = true
+							tasks[i].MadeTime = time.Now()
+
+							fmt.Println("Задача отмечена как выполненная:", title)
+						} else {
+							fmt.Println("Задача уже выполнена:", title)
+						}
+
 						break
 					}
 				}
@@ -159,15 +164,6 @@ func main() {
 			fmt.Println("Завершает программу")
 
 		} else if cmd == "events" {
-			// Сначала добавим текущую команду в историю.
-			event := str.Event{
-				InputText:   text,
-				ErrorText:   "",
-				CreatedTime: time.Now(),
-			}
-
-			events = append(events, event)
-
 			if len(events) == 0 {
 				fmt.Println("Список событий пуст")
 				continue
@@ -178,15 +174,28 @@ func main() {
 
 			for i, event := range events {
 				fmt.Printf("%d. Ввод: %s\n", i+1, event.InputText)
+
 				if event.ErrorText != "" {
 					fmt.Println("   Ошибка:", event.ErrorText)
-
 				}
-				fmt.Println("   Время:", event.CreatedTime.Format("02.01.2006 15:04:05"))
+
+				// Для done показываем первое время выполнения.
+				// Для остальных команд показываем время ввода команды.
+				if !event.MadeTime.IsZero() {
+					fmt.Println(
+						"   Время выполнения:",
+						event.MadeTime.Format("02.01.2006 15:04:05"),
+					)
+				} else {
+					fmt.Println(
+						"   Время:",
+						event.CreatedTime.Format("02.01.2006 15:04:05"),
+					)
+				}
+
 				fmt.Println("--------")
 			}
 
-			// Чтобы не записывать events второй раз ниже.
 			continue
 
 		} else if cmd == "exit" {
@@ -211,13 +220,26 @@ func main() {
 			fmt.Println("Вы ввели неизвестную команду")
 		}
 
-		// Записываем событие после выполнения команды.
+		// Создаём событие после выполнения команды.
 		event := str.Event{
 			InputText:   text,
 			ErrorText:   errorText,
 			CreatedTime: time.Now(),
 		}
 
+		// Если это done, сохраняем время первого выполнения задачи.
+		if cmd == "done" && len(fields) >= 2 {
+			title := fields[1]
+
+			for i := range tasks {
+				if tasks[i].Zagolovok == title {
+					event.MadeTime = tasks[i].MadeTime
+					break
+				}
+			}
+		}
+
+		// Добавляем событие только один раз.
 		events = append(events, event)
 	}
 }
