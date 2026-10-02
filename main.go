@@ -46,17 +46,32 @@ func main() {
 				title := fields[1]
 				taskText := strings.Join(fields[2:], " ")
 
-				task := str.TooDoo{
-					Zagolovok:   title,
-					TextZadachi: taskText,
-					CreatedTime: time.Now(),
-					Status:      false,
+				// Проверяем, есть ли уже задача с таким заголовком
+				duplicate := false
+
+				for _, task := range tasks {
+					if task.Zagolovok == title {
+						duplicate = true
+						break
+					}
 				}
 
-				tasks = append(tasks, task)
+				if duplicate {
+					errorText = "задача с таким заголовком уже существует"
+					fmt.Println("Ошибка:", errorText)
+				} else {
+					task := str.TooDoo{
+						Zagolovok:   title,
+						TextZadachi: taskText,
+						CreatedTime: time.Now(),
+						Status:      false,
+					}
 
-				fmt.Println("Вы хотите добавить задачу:")
-				pp.Println(task)
+					tasks = append(tasks, task)
+
+					fmt.Println("Вы хотите добавить задачу:")
+					pp.Println(task)
+				}
 			}
 
 		} else if cmd == "list" {
