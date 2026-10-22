@@ -1,13 +1,11 @@
-package helper
+package todolist
 
 import (
 	"fmt"
 	"time"
-
-	"proga/str"
 )
 
-func Done(tasks []str.TooDoo, fields []string) ([]str.TooDoo, string, time.Time) {
+func Done(tasks []Task, fields []string) ([]Task, string, time.Time) {
 	if len(fields) < 2 {
 		errorText := "укажите хотя бы один заголовок задачи"
 		fmt.Println("Ошибка:", errorText)
@@ -21,11 +19,11 @@ func Done(tasks []str.TooDoo, fields []string) ([]str.TooDoo, string, time.Time)
 		found := false
 
 		for i := range tasks {
-			if tasks[i].Zagolovok == title {
+			if tasks[i].Title == title {
 				found = true
 
-				if !tasks[i].Status {
-					tasks[i].Status = true
+				if !tasks[i].IsDone {
+					tasks[i].IsDone = true
 					tasks[i].MadeTime = time.Now()
 
 					fmt.Println(

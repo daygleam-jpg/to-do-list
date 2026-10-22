@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"proga/helper"
-	"proga/str"
+	todolist "proga/Todolist"
+	"proga/events"
 	"strings"
 	"time"
 )
@@ -14,15 +14,13 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Buffer(make([]byte, 1024), 1024*1024)
 
-	tasks := []str.TooDoo{}
-	events := []str.Event{}
-
+	tasks := []todolist.Task{}
+	eventsList := []events.Event{}
 	for {
 		fmt.Print("Введите команду: ")
 
-		if ok := scanner.Scan(); !ok {
-			fmt.Println("Ошибка ввода")
-			return
+		if !scanner.Scan() {
+			break
 		}
 
 		text := scanner.Text()
@@ -39,34 +37,27 @@ func main() {
 
 		switch cmd {
 		case "add":
-			tasks, errorText = helper.Add(tasks, fields)
+			tasks, errorText = todolist.Add(tasks, fields)
 
 		case "list":
-			helper.List(tasks)
+			todolist.List(tasks)
 
 		case "done":
-			tasks, errorText, eventMadeTime = helper.Done(tasks, fields)
+			tasks, errorText, eventMadeTime = todolist.Done(tasks, fields)
 
 		case "del":
-			tasks, errorText = helper.Del(tasks, fields)
+			tasks, errorText = todolist.Del(tasks, fields)
 
 		case "help":
-			helper.Help()
+			todolist.Help()
 
 		case "events":
-			helper.Events(events)
-			continue
+			events.Events(eventsList)
 
 		case "exit":
 			fmt.Println("Вы завершаете программу")
 
-			event := str.Event{
-				InputText:   text,
-				ErrorText:   "",
-				CreatedTime: time.Now(),
-			}
-
-			events = append(events, event)
+			eventsList = append(eventsList, events.NewEvent(text, "", time.Time{}))
 
 			return
 
@@ -76,13 +67,11 @@ func main() {
 		}
 
 		// Сохраняем событие после выполнения команды.
-		event := str.Event{
-			InputText:   text,
-			ErrorText:   errorText,
-			CreatedTime: time.Now(),
-			MadeTime:    eventMadeTime,
-		}
+		eventsList = append(eventsList, events.NewEvent(text, errorText, eventMadeTime))
+	}
 
-		events = append(events, event)
+	// Проверяем ошибку scanner после завершения цикла.
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Ошибка ввода:", err)
 	}
 }

@@ -1,16 +1,14 @@
-package helper
+package todolist
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
-	"proga/str"
-
 	"github.com/k0kubun/pp"
 )
 
-func Add(tasks []str.TooDoo, fields []string) ([]str.TooDoo, string) {
+func Add(tasks []Task, fields []string) ([]Task, string) {
 	if len(fields) < 3 {
 		errorText := "нужно указать заголовок и текст задачи"
 		fmt.Println("Ошибка:", errorText)
@@ -22,18 +20,18 @@ func Add(tasks []str.TooDoo, fields []string) ([]str.TooDoo, string) {
 
 	// Проверяем, есть ли уже задача с таким заголовком.
 	for _, task := range tasks {
-		if task.Zagolovok == title {
+		if task.Title == title {
 			errorText := "задача с таким заголовком уже существует"
 			fmt.Println("Ошибка:", errorText)
 			return tasks, errorText
 		}
 	}
 
-	task := str.TooDoo{
-		Zagolovok:   title,
-		TextZadachi: taskText,
+	task := Task{
+		Title:       title,
+		Text:        taskText,
 		CreatedTime: time.Now(),
-		Status:      false,
+		IsDone:      false,
 	}
 
 	tasks = append(tasks, task)
