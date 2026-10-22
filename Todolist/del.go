@@ -1,12 +1,10 @@
-package helper
+package todolist
 
 import (
 	"fmt"
-
-	"proga/str"
 )
 
-func Del(tasks []str.TooDoo, fields []string) ([]str.TooDoo, string) {
+func Del(tasks []Task, fields []string) ([]Task, string) {
 	if len(fields) < 2 {
 		errorText := "укажите хотя бы один заголовок задачи"
 		fmt.Println("Ошибка:", errorText)
@@ -18,7 +16,7 @@ func Del(tasks []str.TooDoo, fields []string) ([]str.TooDoo, string) {
 		found := false
 
 		for i := range tasks {
-			if tasks[i].Zagolovok == title {
+			if tasks[i].Title == title {
 				tasks = append(tasks[:i], tasks[i+1:]...)
 
 				fmt.Println("Задача удалена:", title)
