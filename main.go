@@ -14,8 +14,9 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Buffer(make([]byte, 1024), 1024*1024)
 
-	tasks := []todolist.Task{}
+	todoList := todolist.NewTodoList()
 	eventsList := []events.Event{}
+
 	for {
 		fmt.Print("Введите команду: ")
 
@@ -37,28 +38,67 @@ func main() {
 
 		switch cmd {
 		case "add":
-			tasks, errorText = todolist.Add(tasks, fields)
+			if len(fields) < 3 {
+				errorText = "нужно указать заголовок и текст задачи"
+				fmt.Println("Ошибка:", errorText)
+				break
+			}
+
+			title := fields[1]
+			taskText := strings.Join(fields[2:], " ")
+
+			task := todolist.NewTask(title, taskText)
+			errorText = todoList.Add(task)
 
 		case "list":
-			todolist.List(tasks)
+			todoList.List()
 
 		case "done":
-			tasks, errorText, eventMadeTime = todolist.Done(tasks, fields)
+			if len(fields) < 2 {
+				errorText = "укажите хотя бы один заголовок задачи"
+				fmt.Println("Ошибка:", errorText)
+				break
+			}
+
+			for _, title := range fields[1:] {
+				err, madeTime := todoList.Done(title)
+
+				if err != "" {
+					errorText = err
+				}
+
+				if eventMadeTime.IsZero() && !madeTime.IsZero() {
+					eventMadeTime = madeTime
+				}
+			}
 
 		case "del":
-			tasks, errorText = todolist.Del(tasks, fields)
+			if len(fields) < 2 {
+				errorText = "укажите хотя бы один заголовок задачи"
+				fmt.Println("Ошибка:", errorText)
+				break
+			}
+
+			for _, title := range fields[1:] {
+				err := todoList.Del(title)
+
+				if err != "" {
+					errorText = err
+				}
+			}
 
 		case "help":
 			todolist.Help()
 
 		case "events":
-			events.Events(eventsList)
+			events.PrintEvents(eventsList)
 
 		case "exit":
 			fmt.Println("Вы завершаете программу")
-
-			eventsList = append(eventsList, events.NewEvent(text, "", time.Time{}))
-
+			eventsList = append(
+				eventsList,
+				events.NewEvent(text, "", time.Time{}),
+			)
 			return
 
 		default:
@@ -67,10 +107,12 @@ func main() {
 		}
 
 		// Сохраняем событие после выполнения команды.
-		eventsList = append(eventsList, events.NewEvent(text, errorText, eventMadeTime))
+		eventsList = append(
+			eventsList,
+			events.NewEvent(text, errorText, eventMadeTime),
+		)
 	}
 
-	// Проверяем ошибку scanner после завершения цикла.
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Ошибка ввода:", err)
 	}

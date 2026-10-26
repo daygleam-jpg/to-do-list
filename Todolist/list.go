@@ -1,11 +1,9 @@
 package todolist
 
-import (
-	"fmt"
-)
+import "fmt"
 
-func List(tasks []Task) {
-	if len(tasks) == 0 {
+func (t *TodoList) List() {
+	if len(t.tasks) == 0 {
 		fmt.Println("Список задач пуст")
 		return
 	}
@@ -13,7 +11,7 @@ func List(tasks []Task) {
 	fmt.Println("Список задач:")
 	fmt.Println("--------")
 
-	for i, task := range tasks {
+	for i, task := range t.tasks {
 		fmt.Printf(
 			"%d. %s — %s\n",
 			i+1,

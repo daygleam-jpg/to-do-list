@@ -13,3 +13,18 @@ type Task struct {
 type TodoList struct {
 	tasks []Task
 }
+
+func NewTask(title, text string) Task {
+	return Task{
+		Title:       title,
+		Text:        text,
+		CreatedTime: time.Now(),
+		IsDone:      false,
+	}
+}
+
+func NewTodoList() *TodoList {
+	return &TodoList{
+		tasks: []Task{},
+	}
+}

@@ -32,8 +32,8 @@ func (e Event) Print() {
 		fmt.Printf("Время выполнения: %s\n", e.MadeTime.Format("02.01.2006 15:04:05"))
 	}
 }
-func Events(events []Event) {
-	if len(events) == 0 {
+func PrintEvents(eventsList []Event) {
+	if len(eventsList) == 0 {
 		fmt.Println("Список событий пуст")
 		return
 	}
@@ -41,7 +41,7 @@ func Events(events []Event) {
 	fmt.Println("Список всех событий:")
 	fmt.Println("--------")
 
-	for i, event := range events {
+	for i, event := range eventsList {
 		fmt.Printf("%d. ", i+1)
 		event.Print()
 		fmt.Println("--------")
