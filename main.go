@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"proga/helper"
-	"proga/str"
+	todolist "proga/Todolist"
+	"proga/events"
 	"strings"
 	"time"
 )
@@ -14,15 +14,14 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Buffer(make([]byte, 1024), 1024*1024)
 
-	tasks := []str.TooDoo{}
-	events := []str.Event{}
+	todoList := todolist.NewTodoList()
+	eventsList := []events.Event{}
 
 	for {
 		fmt.Print("Введите команду: ")
 
-		if ok := scanner.Scan(); !ok {
-			fmt.Println("Ошибка ввода")
-			return
+		if !scanner.Scan() {
+			break
 		}
 
 		text := scanner.Text()
@@ -39,35 +38,67 @@ func main() {
 
 		switch cmd {
 		case "add":
-			tasks, errorText = helper.Add(tasks, fields)
+			if len(fields) < 3 {
+				errorText = "нужно указать заголовок и текст задачи"
+				fmt.Println("Ошибка:", errorText)
+				break
+			}
+
+			title := fields[1]
+			taskText := strings.Join(fields[2:], " ")
+
+			task := todolist.NewTask(title, taskText)
+			errorText = todoList.Add(task)
 
 		case "list":
-			helper.List(tasks)
+			todoList.List()
 
 		case "done":
-			tasks, errorText, eventMadeTime = helper.Done(tasks, fields)
+			if len(fields) < 2 {
+				errorText = "укажите хотя бы один заголовок задачи"
+				fmt.Println("Ошибка:", errorText)
+				break
+			}
+
+			for _, title := range fields[1:] {
+				err, madeTime := todoList.Done(title)
+
+				if err != "" {
+					errorText = err
+				}
+
+				if eventMadeTime.IsZero() && !madeTime.IsZero() {
+					eventMadeTime = madeTime
+				}
+			}
 
 		case "del":
-			tasks, errorText = helper.Del(tasks, fields)
+			if len(fields) < 2 {
+				errorText = "укажите хотя бы один заголовок задачи"
+				fmt.Println("Ошибка:", errorText)
+				break
+			}
+
+			for _, title := range fields[1:] {
+				err := todoList.Del(title)
+
+				if err != "" {
+					errorText = err
+				}
+			}
 
 		case "help":
-			helper.Help()
+			todolist.Help()
 
 		case "events":
-			helper.Events(events)
-			continue
+			events.PrintEvents(eventsList)
 
 		case "exit":
 			fmt.Println("Вы завершаете программу")
-
-			event := str.Event{
-				InputText:   text,
-				ErrorText:   "",
-				CreatedTime: time.Now(),
-			}
-
-			events = append(events, event)
-
+			eventsList = append(
+				eventsList,
+				events.NewEvent(text, "", time.Time{}),
+			)
 			return
 
 		default:
@@ -76,13 +107,13 @@ func main() {
 		}
 
 		// Сохраняем событие после выполнения команды.
-		event := str.Event{
-			InputText:   text,
-			ErrorText:   errorText,
-			CreatedTime: time.Now(),
-			MadeTime:    eventMadeTime,
-		}
+		eventsList = append(
+			eventsList,
+			events.NewEvent(text, errorText, eventMadeTime),
+		)
+	}
 
-		events = append(events, event)
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Ошибка ввода:", err)
 	}
 }
